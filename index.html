@@ -1,51 +1,68 @@
-// ===== WEB DASHBOARD =====
-void handleRoot() {
-  String html = "<!DOCTYPE html><html lang='en'>";
-  html += "<head>";
-  html += "<meta charset='UTF-8'>";
-  html += "<meta name='viewport' content='width=device-width, initial-scale=1.0'>";
-  html += "<title>Pyramid Surveillance Dashboard</title>";
-  html += "<style>";
-  html += "body{background:#111;color:#0f0;font-family:Arial,sans-serif;text-align:center;}";
-  html += "h1{margin-top:20px;color:#0ff;}";
-  html += ".status{margin:10px;padding:10px;font-size:1.2em;}";
-  html += ".quads{display:flex;flex-wrap:wrap;justify-content:center;margin-top:20px;}";
-  html += ".quad{width:140px;height:140px;margin:10px;border:3px solid #0f0;display:flex;flex-direction:column;justify-content:center;align-items:center;font-weight:bold;font-size:1em;}";
-  html += ".alert{border-color:#f00;color:#f00;}";
-  html += ".motion{border-color:#ff0;color:#ff0;}";
-  html += "</style>";
-  html += "</head>";
-  html += "<body>";
-  html += "<h1>Pyramid Surveillance System</h1>";
-
-  // Status box
-  html += "<div class='status'>";
-  html += "System: " + String(systemArmed ? "ARMED" : "DISARMED") + "<br>";
-  html += "Current Alert: ";
-  if (currentAlert == NONE) html += "NONE";
-  else if (currentAlert == MOTION) html += "MOTION";
-  else if (currentAlert == PROXIMITY) html += "PROXIMITY";
-  html += "</div>";
-
-  // Quad view
-  html += "<div class='quads'>";
-  for(int i=0;i<4;i++){
-    String quadClass = "quad";
-    if(currentAlert != NONE && activeAlertCam == quads[i].camNum){
-      quadClass += (currentAlert == MOTION) ? " motion" : " alert";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pyramid Surveillance Dashboard</title>
+  <style>
+    body {
+      background: #111;
+      color: #0f0;
+      font-family: Arial, sans-serif;
+      text-align: center;
     }
-    html += "<div class='" + quadClass + "'>";
-    html += directions[quads[i].camNum] + "<br>Cam " + String(quads[i].camNum);
-    html += "</div>";
-  }
-  html += "</div>";
+    h1 {
+      margin-top: 20px;
+      color: #0ff;
+    }
+    .status {
+      margin: 10px;
+      padding: 10px;
+      font-size: 1.2em;
+      border: 2px solid #0f0;
+      display: inline-block;
+    }
+    .quads {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .quad {
+      width: 140px;
+      height: 140px;
+      margin: 10px;
+      border: 3px solid #0f0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      font-size: 1em;
+      transition: 0.3s;
+    }
+    .alert {
+      border-color: #f00;
+      color: #f00;
+    }
+    .motion {
+      border-color: #ff0;
+      color: #ff0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pyramid Surveillance System</h1>
+  <div class="status">
+    System: ARMED<br>
+    Current Alert: NONE
+  </div>
 
-  // Auto-refresh every 1s
-  html += "<script>";
-  html += "setTimeout(function(){ window.location.reload(); }, 1000);";
-  html += "</script>";
-
-  html += "</body></html>";
-
-  server.send(200, "text/html", html);
-}
+  <div class="quads">
+    <div class="quad">NORTH<br>Cam 1</div>
+    <div class="quad">EAST<br>Cam 2</div>
+    <div class="quad">SOUTH<br>Cam 3</div>
+    <div class="quad">WEST<br>Cam 4</div>
+  </div>
+</body>
+</html>
