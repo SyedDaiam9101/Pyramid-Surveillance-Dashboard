@@ -1,1 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>✨ Your Portfolio — Live Editor</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#071022; --panel:#0e1624; --glass: rgba(255,255,255,0.03);
+  --accent:#7c5cff; --accent2:#00ffd5; --muted:rgba(230,238,248,0.6);
+  --card-radius:16px; --card-pad:16px; --mono:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:radial-gradient(800px 300px at 12% 12%, #0b2230 0%, #071022 30%, #03050a 100%);font-family:var(--mono);color:#eaf2ff}
+.app{max-width:1200px;margin:28px auto;padding:22px;display:grid;grid-template-columns:320px 1fr;gap:20px}
+.panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:var(--card-radius);padding:18px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 18px 40px rgba(2,6,23,0.6)}
+.header{display:flex;align-items:center;gap:12px}
+.logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-weight:800;color:#041024}
+.h1{font-size:18px;margin:0}
+.muted{color:var(--muted);font-size:13px}
+.controls{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.row{display:flex;gap:8px;align-items:center}
+.btn{padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.05);background:transparent;color:inherit;cursor:pointer;font-weight:600}
+.btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#051024;border:0}
+.small{font-size:13px;color:var(--muted)}
+.switch{display:flex;gap:8px}
+.preview{min-height:640px;padding:0;border-radius:var(--card-radius);overflow:hidden}
+.preview-inner{display:grid;grid-template-columns:380px 1fr;min-height:640px}
+.sidebar-preview{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:20px}
+.hero{padding:28px 28px 20px}
+.avatar{width:120px;height:120px;border-radius:20px;overflow:hidden;background:rgba(255,255,255,0.04);display:grid;place-items:center;font-weight:800}
+.name{font-size:22px;font-weight:800;margin-top:12px}
+.role{margin-top:6px;color:var(--muted)}
+.section{margin-top:18px;padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));}
+.section h3{margin:0 0 8px 0}
+.project{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+.project .thumb{width:56px;height:40px;border-radius:8px;background:rgba(255,255,255,0.04)}
+.editor{display:flex;flex-direction:column;gap:12px}
+.field{display:flex;flex-direction:column;gap:6px}
+.input,textarea,select{padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+textarea{min-height:96px}
+.actions{display:flex;gap:8px;justify-content:space-between;align-items:center}
+.inline-edit{border:1px dashed rgba(255,255,255,0.04);padding:6px;border-radius:8px}
+.editable{outline:none}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.code-output{white-space:pre-wrap;background:#071428;padding:12px;border-radius:8px;overflow:auto;max-height:240px}
+.footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.theme-sample{height:40px;border-radius:8px}
+.badge{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.03)}
+.note{font-size:13px;color:var(--muted)}
+/* modal */
+.modal-wrap{position:fixed;inset:0;display:grid;place-items:center;background:linear-gradient(180deg, rgba(2,6,23,0.6), rgba(2,6,23,0.65));z-index:60}
+.modal{background:linear-gradient(180deg,#071428,#061021);padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);min-width:320px}
+.modal h2{margin:0}
+.opt{cursor:pointer;padding:8px;border-radius:8px}
+.preview-actions{display:flex;gap:8px}
+/* responsive */
+@media (max-width:980px){.app{grid-template-columns:1fr;padding:16px}.preview-inner{grid-template-columns:1fr}.sidebar-preview{display:none}}
+</style>
+</head>
+<body>
+  <div class="app">
+    <aside class="panel">
+      <div class="header">
+        <div class="logo">P</div>
+        <div>
+          <div class="h1">Personal Portfolio Editor</div>
+          <div class="muted">Live editing • export • themes • autosave</div>
+        </div>
+      </div>
 
+      <div class="controls">
+        <div class="row"><button class="btn primary" id="editToggle">Toggle Edit Mode</button><button class="btn" id="saveBtn">Save</button></div>
+        <div class="row"><button class="btn" id="exportBtn">Export HTML</button><button class="btn" id="downloadBtn">Download ZIP</button></div>
+        <div class="row"><button class="btn" id="resetBtn">Reset to Default</button></div>
+
+        <div class="field">
+          <label class="small">Theme Accent</label>
+          <input type="color" id="accentPicker" value="#7c5cff" />
+        </div>
+
+        <div class="field">
+          <label class="small">Font Weight</label>
+          <select id="fontWeight"><option value="400">Normal</option><option value="600">Semi-bold</option><option value="800">Bold</option></select>
+        </div>
+
+        <div>
+          <div class="muted">Quick actions</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+            <button class="btn" id="addProject">+ Add Project</button>
+            <button class="btn" id="prefillDemo">Fill Demo Content</button>
+          </div>
+        </div>
+
+        <div class="note">Your data is stored locally in your browser (localStorage). Use export to save a standalone copy.</div>
+      </div>
+    </aside>
+
+    <main class="panel">
+      <div class="topbar">
+        <div style="font-weight:700">Live Preview</div>
+        <div class="preview-actions">
+          <div class="badge">Status: <span id="autoSaveStatus">Idle</span></div>
+        </div>
+      </div>
+
+      <div class="preview" id="preview">
+        <div class="preview-inner" id="previewInner">
+
+          <!-- Left column (sidebar preview) -->
+          <div class="sidebar-preview" id="sidebarPreview">
+            <div class="hero">
+              <div class="avatar" id="avatarPreview">AB</div>
+              <div class="name editable" id="previewName">Your Name</div>
+              <div class="role editable" id="previewRole">Designer • Developer • Student</div>
+            </div>
+
+            <div class="section">
+              <h3>About</h3>
+              <div class="editable" id="previewAbout">Write a short bio here. Click Edit to change this.</div>
+            </div>
+
+            <div class="section">
+              <h3>Contact</h3>
+              <div class="editable" id="previewContact">email@example.com</div>
+            </div>
+          </div>
+
+          <!-- Right column (main preview) -->
+          <div style="padding:28px 36px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+              <div>
+                <div class="name editable" id="mainName">Your Name</div>
+                <div class="muted" id="mainRole">Designer • Developer</div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <button class="btn" id="themeBtn">Theme</button>
+                <button class="btn" id="editBtn">Edit</button>
+              </div>
+            </div>
+
+            <div class="section" style="margin-top:18px">
+              <h3>Featured Projects</h3>
+              <div id="projectsList">
+                <!-- projects go here -->
+              </div>
+            </div>
+
+            <div class="section" style="margin-top:18px">
+              <h3>Skills</h3>
+              <div class="editable" id="skills">HTML, CSS, JS</div>
+            </div>
+
+            <div class="section" style="margin-top:18px">
+              <h3>Footer</h3>
+              <div class="editable" id="footerText">Made with ❤️ • Editable portfolio</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="muted">Editable demo • actions update live preview</div>
+        <div><button class="btn" id="helpBtn">Help</button></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Onboarding modal -->
+  <div id="onboard" style="display:none" class="modal-wrap">
+    <div class="modal">
+      <h2>Welcome! Quick setup</h2>
+      <div class="small" style="margin-top:8px">Tell me who you are — this pre-fills your portfolio.</div>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+        <input id="firstName" class="input" placeholder="First name" />
+        <input id="lastName" class="input" placeholder="Last name" />
+        <input id="email" class="input" placeholder="Email" />
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn" id="skipOnboard">Skip</button>
+        <button class="btn primary" id="saveOnboard">Start</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+// --- data model & defaults ---
+const defaultData = {
+  name: 'Alex River',
+  role: 'Designer • Developer • Student',
+  about: 'I build delightful interfaces and small web projects. I like colors and tiny animations.',
+  email: 'alex@example.com',
+  skills: 'HTML, CSS, JavaScript, Python',
+  footer: 'Made with ❤️ — customizable portfolio',
+  projects: [
+    {title:'Neon Notes', desc:'A minimal notes app with neon UI.'},
+    {title:'Weather UI', desc:'Animated weather dashboard.'}
+  ],
+  accent: '#7c5cff',
+  fontWeight: '600'
+};
+
+// --- elements ---
+const previewName = document.getElementById('previewName');
+const previewRole = document.getElementById('previewRole');
+const previewAbout = document.getElementById('previewAbout');
+const previewContact = document.getElementById('previewContact');
+const mainName = document.getElementById('mainName');
+const mainRole = document.getElementById('mainRole');
+const projectsList = document.getElementById('projectsList');
+const skillsEl = document.getElementById('skills');
+const footerText = document.getElementById('footerText');
+const avatar = document.getElementById('avatarPreview');
+const accentPicker = document.getElementById('accentPicker');
+const fontWeight = document.getElementById('fontWeight');
+const editToggle = document.getElementById('editToggle');
+const editBtn = document.getElementById('editBtn');
+const saveBtn = document.getElementById('saveBtn');
+const exportBtn = document.getElementById('exportBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const addProject = document.getElementById('addProject');
+const prefillDemo = document.getElementById('prefillDemo');
+const resetBtn = document.getElementById('resetBtn');
+const onboard = document.getElementById('onboard');
+const saveOnboard = document.getElementById('saveOnboard');
+const skipOnboard = document.getElementById('skipOnboard');
+const firstName = document.getElementById('firstName');
+const lastName = document.getElementById('lastName');
+const emailIn = document.getElementById('email');
+const autoSaveStatus = document.getElementById('autoSaveStatus');
+
+let data = load() || defaultData;
+let editMode = true;
+
+// --- initialization ---
+function render(){
+  previewName.textContent = data.name.split(' ')[0] || data.name;
+  mainName.textContent = data.name;
+  previewRole.textContent = data.role;
+  mainRole.textContent = data.role;
+  previewAbout.textContent = data.about;
+  previewContact.textContent = data.email;
+  skillsEl.textContent = data.skills;
+  footerText.textContent = data.footer;
+  accentPicker.value = data.accent || defaultData.accent;
+  fontWeight.value = data.fontWeight || defaultData.fontWeight;
+  document.documentElement.style.setProperty('--accent', data.accent);
+  // avatar initials
+  avatar.textContent = initials(data.name);
+  // render projects
+  projectsList.innerHTML = '';
+  data.projects.forEach((p, idx)=>{
+    const el = document.createElement('div'); el.className='project';
+    el.innerHTML = `<div class="thumb"></div><div style='flex:1'><div contenteditable="${editMode}" data-idx="${idx}" data-field="title" class="editable inline-edit project-title">${p.title}</div><div contenteditable="${editMode}" data-idx="${idx}" data-field="desc" class="small editable project-desc">${p.desc}</div></div><div style='display:flex;flex-direction:column;gap:6px'><button class='btn' data-act='up' data-idx='${idx}'>↑</button><button class='btn' data-act='del' data-idx='${idx}'>✖</button></div>`;
+    projectsList.appendChild(el);
+  });
+  applyEditable(editMode);
+}
+
+function initials(name){ return name.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase(); }
+
+function applyEditable(on){ document.querySelectorAll('.editable').forEach(el=>{ el.contentEditable = on; el.classList.toggle('inline-edit', on); }); }
+
+// --- events ---
+editToggle.addEventListener('click', ()=>{ editMode = !editMode; applyEditable(editMode); editToggle.textContent = editMode ? 'Disable Edit' : 'Enable Edit'; });
+editBtn.addEventListener('click', ()=>{ editMode = !editMode; applyEditable(editMode); });
+
+accentPicker.addEventListener('input', e=>{ data.accent = e.target.value; document.documentElement.style.setProperty('--accent', data.accent); scheduleSave(); });
+fontWeight.addEventListener('change', e=>{ data.fontWeight = e.target.value; document.body.style.fontWeight = data.fontWeight; scheduleSave(); });
+
+// contenteditable sync
+document.addEventListener('input', e=>{
+  const t = e.target; if(t.classList && t.classList.contains('editable')){
+    if(t.id==='previewName' || t.id==='mainName'){ data.name = t.textContent.trim(); document.querySelectorAll('#previewName,#mainName').forEach(x=>x.textContent=data.name); avatar.textContent = initials(data.name); }
+    if(t.id==='previewRole' || t.id==='mainRole'){ data.role = t.textContent.trim(); document.querySelectorAll('#previewRole,#mainRole').forEach(x=>x.textContent=data.role); }
+    if(t.id==='previewAbout'){ data.about = t.textContent.trim(); }
+    if(t.id==='previewContact'){ data.email = t.textContent.trim(); }
+    if(t.id==='skills'){ data.skills = t.textContent.trim(); }
+    if(t.id==='footerText'){ data.footer = t.textContent.trim(); }
+    // project inline edits
+    if(t.dataset && t.dataset.idx){ const idx = Number(t.dataset.idx); const field = t.dataset.field; data.projects[idx][field] = t.textContent.trim(); }
+    scheduleSave();
+  }
+});
+
+projectsList.addEventListener('click', e=>{
+  const btn = e.target.closest('button'); if(!btn) return; const idx = Number(btn.dataset.idx); const act = btn.dataset.act;
+  if(act==='del'){ data.projects.splice(idx,1); render(); scheduleSave(); }
+  if(act==='up' && idx>0){ const temp = data.projects[idx-1]; data.projects[idx-1] = data.projects[idx]; data.projects[idx] = temp; render(); scheduleSave(); }
+});
+
+addProject.addEventListener('click', ()=>{ data.projects.unshift({title:'New Project', desc:'Describe your project...'}); render(); scheduleSave(); });
+
+prefillDemo.addEventListener('click', ()=>{ data = Object.assign({}, defaultData); render(); scheduleSave(); });
+
+resetBtn.addEventListener('click', ()=>{ if(confirm('Reset all data to defaults?')){ localStorage.removeItem('portfolio_data'); data = Object.assign({}, defaultData); render(); } });
+
+saveBtn.addEventListener('click', ()=>{ save(); alert('Saved locally. Use Export to download standalone HTML.'); });
+
+exportBtn.addEventListener('click', ()=>{ const html = exportHtml(); const w = window.open('about:blank','_blank'); w.document.write(html); w.document.close(); });
+
+downloadBtn.addEventListener('click', ()=>{ const html = exportHtml(); const blob = new Blob([html], {type:'text/html'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'portfolio.html'; a.click(); URL.revokeObjectURL(url); });
+
+// onboarding
+window.addEventListener('load', ()=>{
+  const seen = localStorage.getItem('portfolio_seen_onboard');
+  if(!seen){ onboard.style.display='grid'; }
+});
+
+saveOnboard.addEventListener('click', ()=>{ const f = firstName.value.trim(); const l = lastName.value.trim(); const em = emailIn.value.trim(); if(f||l){ data.name = (f + (l? ' '+l : '')).trim(); } if(em) data.email = em; localStorage.setItem('portfolio_seen_onboard','1'); onboard.style.display='none'; render(); save(); });
+skipOnboard.addEventListener('click', ()=>{ localStorage.setItem('portfolio_seen_onboard','1'); onboard.style.display='none'; });
+
+// autosave throttle
+let saveTimer = null; let autosaveCount=0;
+function scheduleSave(){ autoSaveStatus.textContent = 'Saving...'; clearTimeout(saveTimer); saveTimer = setTimeout(()=>{ save(); autoSaveStatus.textContent = 'Saved ('+(++autosaveCount)+')'; setTimeout(()=>autoSaveStatus.textContent='Idle',1200); }, 700); }
+
+function save(){ localStorage.setItem('portfolio_data', JSON.stringify(data)); }
+function load(){ try{ return JSON.parse(localStorage.getItem('portfolio_data')); }catch(e){ return null; } }
+
+// export html (simple single-file template)
+function exportHtml(){ const clean = JSON.stringify(data).replace(/</g,'\u003c'); const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${data.name} — Portfolio</title><style>body{font-family:Inter,system-ui, -apple-system, 'Segoe UI', Roboto; background:#071022;color:#eaf2ff;padding:28px} .card{max-width:900px;margin:0 auto;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:32px;border-radius:16px} .accent{color:${data.accent}} h1{margin:0} .muted{color:#95a3b6}</style></head><body><div class="card"><h1>${escapeHtml(data.name)}</h1><div class="muted">${escapeHtml(data.role)}</div><p>${escapeHtml(data.about)}</p><h3>Projects</h3><ul>${data.projects.map(p=>`<li><strong>${escapeHtml(p.title)}</strong> — ${escapeHtml(p.desc)}</li>`).join('')}</ul><h3>Contact</h3><div>${escapeHtml(data.email)}</div><footer style="margin-top:20px" class="muted">${escapeHtml(data.footer)}</footer></div></body></html>`; return html; }
+
+function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// utility: initials when name changes live
+// load & render
+render();
+
+// small UX: keyboard shortcut to open export
+document.addEventListener('keydown', e=>{ if(e.ctrlKey && e.key==='e'){ e.preventDefault(); exportBtn.click(); } });
+
+// small help
+document.getElementById('helpBtn').addEventListener('click', ()=>{
+  alert('Quick tips:\n- Click Edit to enable inline editing.\n- Use Add Project to add items.\n- Use Export HTML to create a standalone page.\n- Data is saved locally in your browser.');
+});
+
+// show onboard if not seen
+if(!localStorage.getItem('portfolio_seen_onboard')){ onboard.style.display='grid'; }
+
+</script>
+</body>
+</html>
